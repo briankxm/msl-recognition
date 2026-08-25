@@ -1,0 +1,59 @@
+{
+  "SVM": {
+    "training_time_sec": 0.20836610000696965,
+    "validation": {
+      "accuracy": 0.9973154362416108,
+      "precision": 0.9975389527246121,
+      "recall": 0.9972162012835224,
+      "f1_score": 0.9973584093029287,
+      "total_inference_time_sec": 0.019690999994054437,
+      "avg_inference_time_ms": 0.026430872475240855
+    },
+    "test": {
+      "accuracy": 0.9986595174262735,
+      "precision": 0.9988344988344988,
+      "recall": 0.998663101604278,
+      "f1_score": 0.9987400890626698,
+      "total_inference_time_sec": 0.016922900002100505,
+      "avg_inference_time_ms": 0.02268485254973258
+    }
+  },
+  "KNN": {
+    "training_time_sec": 0.0013073000009171665,
+    "validation": {
+      "accuracy": 0.9986577181208054,
+      "precision": 0.9986824769433466,
+      "recall": 0.9988038277511961,
+      "f1_score": 0.9987343830337014,
+      "total_inference_time_sec": 0.005836600001202896,
+      "avg_inference_time_ms": 0.007834362417722007
+    },
+    "test": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "total_inference_time_sec": 0.011310799993225373,
+      "avg_inference_time_ms": 0.015161930285824897
+    }
+  },
+  "RandomForest": {
+    "training_time_sec": 1.6875136000016937,
+    "validation": {
+      "accuracy": 0.9986577181208054,
+      "precision": 0.998719590268886,
+      "recall": 0.998533724340176,
+      "f1_score": 0.9986161563743298,
+      "total_inference_time_sec": 0.016722699991078116,
+      "avg_inference_time_ms": 0.02244657716923237
+    },
+    "test": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "total_inference_time_sec": 0.01767420000396669,
+      "avg_inference_time_ms": 0.023691957109874918
+    }
+  }
+}
