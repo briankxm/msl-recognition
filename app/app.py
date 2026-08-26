@@ -48,13 +48,13 @@ from src import config
 
 st.set_page_config(
     page_title="MSL Hand Gesture Recognition",
-    page_icon="🤟",
+    page_icon="",
     layout="wide",
 )
 
 MODE_LABELS = {
-    "alphabet": "🔤 Alphabet (A–Z)",
-    "number": "🔢 Number (0–10)",
+    "alphabet": "Alphabet (A–Z)",
+    "number": "Number (0–10)",
 }
 
 # Shared with the webrtc worker thread (dict assignment is atomic under GIL).
@@ -71,9 +71,9 @@ def render_predictions(results):
     a top-K similar-signs bar chart. Plus an agreement badge on top."""
     labels = [r["label"] for r in results.values()]
     if len(set(labels)) == 1:
-        st.success(f"✅ All {len(labels)} algorithms agree: **{labels[0]}**")
+        st.success(f"All {len(labels)} algorithms agree: **{labels[0]}**")
     else:
-        st.warning(f"⚠️ Algorithms disagree: " + ", ".join(
+        st.warning(f"Algorithms disagree: " + ", ".join(
             f"**{n}** → {r['label']}" for n, r in results.items()
         ))
 
@@ -114,7 +114,7 @@ def video_frame_callback(frame):
 
 # ---------------------------------------------------------------- sidebar ---
 with st.sidebar:
-    st.header("⚙️ Settings")
+    st.header("Settings")
 
     # ---- recognition mode: two independent tasks, two model sets ----
     selected_mode = st.radio(
@@ -129,13 +129,13 @@ with st.sidebar:
         if m == selected_mode:
             continue
         if m_models:
-            st.caption(f"{MODE_LABELS[m]}: ✅ trained")
+            st.caption(f"{MODE_LABELS[m]}: trained")
         else:
-            st.caption(f"{MODE_LABELS[m]}: ⬜ not trained yet")
+            st.caption(f"{MODE_LABELS[m]}: not trained yet")
 
     input_mode = st.radio(
         "Input source",
-        ["📁 Upload image", "📸 Camera snapshot", "🎥 Live camera"],
+        ["Upload image", "Camera capture", "Live camera"],
     )
     conf_threshold = st.slider("Low-confidence alert below (%)", 0, 100, 50, 5)
 
@@ -158,7 +158,7 @@ with st.sidebar:
         )
 
 # ------------------------------------------------------------------- tabs ---
-tab_pred, tab_report = st.tabs(["🔮 Prediction", "📊 Model Comparison"])
+tab_pred, tab_report = st.tabs(["Prediction", "Model Comparison"])
 
 # ---------------------------------------------------------- prediction tab --
 with tab_pred:
@@ -168,13 +168,13 @@ with tab_pred:
 
     image_bgr = None
 
-    if input_mode == "📁 Upload image":
+    if input_mode == "Upload image":
         uploaded = st.file_uploader("Upload a hand photo (JPG/PNG)",
                                     type=["jpg", "jpeg", "png"])
         if uploaded is not None and models:
             image_bgr = pil_to_bgr(Image.open(io.BytesIO(uploaded.getvalue())))
 
-    elif input_mode == "📸 Camera snapshot":
+    elif input_mode == "Camera snapshot":
         shot = st.camera_input("Take a photo of your hand")
         if shot is not None and models:
             image_bgr = pil_to_bgr(Image.open(io.BytesIO(shot.getvalue())))
@@ -203,7 +203,7 @@ with tab_pred:
                 render_predictions(LIVE_STATE["results"])
 
     if not models and image_bgr is None:
-        st.info("👋 Welcome! This app recognises MSL hand gestures using the "
+        st.info("Welcome! This app recognises MSL hand gestures using the "
                 "trained SVM / KNN / Random Forest models.\n\n"
                 "**To get started:**\n"
                 f"1. Add images to `data/raw/{selected_mode}/<class>/` "
@@ -220,7 +220,7 @@ with tab_pred:
             features, hand = extract_features(rgb)
 
             if features is None:
-                st.warning("✋ No hand detected. Try better lighting, fill more "
+                st.warning("No hand detected. Try better lighting, fill more "
                            "of the frame with your hand, or use another photo.")
             else:
                 left, right = st.columns([1, 2])
@@ -236,7 +236,7 @@ with tab_pred:
                         default=None,
                     )
                     if best_conf is not None and best_conf * 100 < conf_threshold:
-                        st.info(f"🐢 Low confidence ({best_conf * 100:.1f}% < "
+                        st.info(f"Low confidence ({best_conf * 100:.1f}% < "
                                 f"{conf_threshold}%). Try holding the sign more "
                                 f"clearly.")
                     render_predictions(results)
