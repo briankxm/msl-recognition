@@ -135,7 +135,7 @@ with st.sidebar:
 
     input_mode = st.radio(
         "Input source",
-        ["Upload image", "Camera capture", "Live camera"],
+        ["Upload image", "Camera snapshot", "Live camera"],
     )
     conf_threshold = st.slider("Low-confidence alert below (%)", 0, 100, 50, 5)
 
