@@ -197,14 +197,14 @@ with tab_pred:
                 async_processing=True,
             )
             st.caption("Predictions are drawn live on the video feed "
-                       "(SVM | KNN | RandomForest). The detailed panel below "
+                       "(SVM | MLP | RandomForest). The detailed panel below "
                        "shows the latest analysed frame.")
             if LIVE_STATE["results"]:
                 render_predictions(LIVE_STATE["results"])
 
     if not models and image_bgr is None:
         st.info("Welcome! This app recognises MSL hand gestures using the "
-                "trained SVM / KNN / Random Forest models.\n\n"
+                "trained SVM / MLP / Random Forest models.\n\n"
                 "**To get started:**\n"
                 f"1. Add images to `data/raw/{selected_mode}/<class>/` "
                 f"(e.g. `A/`, `B/`, ... or `0/`...`10/`)\n"

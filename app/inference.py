@@ -28,7 +28,7 @@ from src.normalization import normalise_landmarks
 # model file name -> display name (matches src/train_models.py outputs)
 MODEL_FILES = {
     "svm_model.pkl": "SVM",
-    "knn_model.pkl": "KNN",
+    "mlp_model.pkl": "MLP",
     "randomforest_model.pkl": "RandomForest",
 }
 

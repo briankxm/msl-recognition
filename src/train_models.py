@@ -2,7 +2,7 @@
 Implements the second part of the training algorithm:
 
   SPLIT dataset into Training / Validation / Testing sets
-  FOR each algorithm in [SVM, KNN, RandomForest]:
+  FOR each algorithm in [SVM, MLP, RandomForest]:
       TRAIN using training set
       VALIDATE
       TEST using test set
@@ -29,7 +29,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.svm import SVC
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neural_network import MLPClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
@@ -72,7 +72,11 @@ def get_algorithms():
     needs improving."""
     return {
         "SVM": SVC(kernel="rbf", C=10, gamma="scale", probability=True),
-        "KNN": KNeighborsClassifier(n_neighbors=5, weights="distance"),
+        "MLP": MLPClassifier(
+            hidden_layer_sizes=(128, 64),
+            early_stopping=True,
+            random_state=config.RANDOM_STATE,
+        ),
         "RandomForest": RandomForestClassifier(
             n_estimators=200, max_depth=None, random_state=config.RANDOM_STATE
         ),
@@ -175,7 +179,7 @@ def train_and_evaluate_all(mode, csv_path=None, models_dir=None, results_dir=Non
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Train + evaluate SVM / KNN / RandomForest for one mode."
+        description="Train + evaluate SVM / MLP / RandomForest for one mode."
     )
     parser.add_argument(
         "--mode", choices=config.MODES + ["all"], default="alphabet",

@@ -61,4 +61,4 @@ TEST_SIZE = 0.15
 RANDOM_STATE = 42
 
 # ---- Algorithms to train/compare ----
-ALGORITHMS = ["SVM", "KNN", "RandomForest"]
+ALGORITHMS = ["SVM", "MLP", "RandomForest"]
