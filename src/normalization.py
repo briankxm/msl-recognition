@@ -17,16 +17,22 @@ Method:
 import numpy as np
 
 
-def normalise_landmarks(landmarks):
+def normalise_landmarks(landmarks, handedness=None):
     """
     Args:
         landmarks: iterable of 21 (x, y, z) tuples from MediaPipe.
+        handedness: "Left"/"Right" (or None). A left hand is mirrored
+            horizontally so all training data is canonical right-hand.
 
     Returns:
         np.ndarray of shape (63,) - flattened, translation- and
         scale-invariant feature vector, ready for the classifiers.
     """
     pts = np.array(landmarks, dtype=np.float32)  # shape (21, 3)
+
+    # Mirror left hands to right hands for consistent training data
+    if handedness == "Left":
+        pts[:, 0] = 1.0 - pts[:, 0]  # Horizontal flip
 
     # 1. Translate relative to the wrist (landmark index 0)
     wrist = pts[0].copy()

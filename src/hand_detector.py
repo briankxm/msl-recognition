@@ -52,14 +52,19 @@ def create(running_mode=RUNNING_MODE_IMAGE):
 def detect(detector, image_rgb):
     """Run IMAGE-mode detection on an RGB numpy image.
 
-    Returns a list of 21 landmarks (each with .x/.y/.z) for the first
-    detected hand, or None if no hand was found.
+    Returns (landmarks, handedness) for the first detected hand, or
+    (None, None) if no hand was found. ``handedness`` is "Left"/"Right"
+    after correcting for the fact that MediaPipe assumes a mirrored (selfie)
+    input while our images are NOT mirrored, so the label is swapped.
     """
     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image_rgb)
     result = detector.detect(mp_image)
     if not result.hand_landmarks:
-        return None
-    return result.hand_landmarks[0]
+        return None, None
+    landmarks = result.hand_landmarks[0]
+    mp_hand = result.handedness[0][0].category_name  # "Left"/"Right"
+    true_hand = "Right" if mp_hand == "Left" else "Left"
+    return landmarks, true_hand
 
 
 def detect_video(detector, image_rgb, timestamp_ms):
@@ -68,5 +73,8 @@ def detect_video(detector, image_rgb, timestamp_ms):
     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image_rgb)
     result = detector.detect_for_video(mp_image, int(timestamp_ms))
     if not result.hand_landmarks:
-        return None
-    return result.hand_landmarks[0]
+        return None, None
+    landmarks = result.hand_landmarks[0]
+    mp_hand = result.handedness[0][0].category_name  # "Left"/"Right"
+    true_hand = "Right" if mp_hand == "Left" else "Left"
+    return landmarks, true_hand

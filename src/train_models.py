@@ -74,7 +74,12 @@ def get_algorithms():
         "SVM": SVC(kernel="rbf", C=10, gamma="scale", probability=True),
         "MLP": MLPClassifier(
             hidden_layer_sizes=(128, 64),
+            activation="relu",
+            solver="adam",
+            learning_rate_init=1e-3,
+            batch_size=64,
             early_stopping=True,
+            n_iter_no_change=10,
             random_state=config.RANDOM_STATE,
         ),
         "RandomForest": RandomForestClassifier(

@@ -65,12 +65,12 @@ def extract_landmarks_from_image(detector, image_path):
         return None
 
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    landmarks = hand_detector.detect(detector, image_rgb)
+    landmarks, handedness = hand_detector.detect(detector, image_rgb)
     if landmarks is None:
         return None  # no hand detected -> skip, per pseudocode's IF
 
     coords = [(lm.x, lm.y, lm.z) for lm in landmarks]
-    return normalise_landmarks(coords)
+    return normalise_landmarks(coords, handedness)
 
 
 def build_dataset(mode, raw_dir=None, output_csv=None):

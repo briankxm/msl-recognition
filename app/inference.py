@@ -96,11 +96,11 @@ def extract_features(image_rgb):
 
     Returns (features_63, landmarks) or (None, None) if no hand found.
     """
-    landmarks = hand_detector.detect(get_static_hands(), image_rgb)
+    landmarks, handedness = hand_detector.detect(get_static_hands(), image_rgb)
     if landmarks is None:
         return None, None
     coords = [(lm.x, lm.y, lm.z) for lm in landmarks]
-    return normalise_landmarks(coords), landmarks
+    return normalise_landmarks(coords, handedness), landmarks
 
 
 def extract_features_video(image_rgb):
@@ -114,11 +114,11 @@ def extract_features_video(image_rgb):
         ts = _live_last_ts + 1
     _live_last_ts = ts
 
-    landmarks = hand_detector.detect_video(get_live_hands(), image_rgb, ts)
+    landmarks, handedness = hand_detector.detect_video(get_live_hands(), image_rgb, ts)
     if landmarks is None:
         return None, None
     coords = [(lm.x, lm.y, lm.z) for lm in landmarks]
-    return normalise_landmarks(coords), landmarks
+    return normalise_landmarks(coords, handedness), landmarks
 
 
 def predict_all(models, encoder, features):
