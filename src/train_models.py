@@ -31,7 +31,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.svm import SVC
 from sklearn.neural_network import MLPClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, top_k_accuracy_score
 
 from src import config
 
@@ -90,17 +90,20 @@ def get_algorithms():
 
 def evaluate(model, X, y):
     """Predict + accuracy / precision / recall / F1 (macro-averaged, since
-    this is multi-class: 26 letters or 10 digits) + inference time."""
+    this is multi-class: 26 letters or 10 digits) + top-k accuracy + inference time."""
     start = time.perf_counter()
     y_pred = model.predict(X)
     elapsed = time.perf_counter() - start
 
+    y_proba = model.predict_proba(X)
     n_samples = len(X)
     return {
         "accuracy": accuracy_score(y, y_pred),
         "precision": precision_score(y, y_pred, average="macro", zero_division=0),
         "recall": recall_score(y, y_pred, average="macro", zero_division=0),
         "f1_score": f1_score(y, y_pred, average="macro", zero_division=0),
+        "top3_accuracy": top_k_accuracy_score(y, y_proba, k=3, labels=model.classes_),
+        "top5_accuracy": top_k_accuracy_score(y, y_proba, k=5, labels=model.classes_),
         "total_inference_time_sec": elapsed,
         "avg_inference_time_ms": (elapsed / n_samples) * 1000 if n_samples else 0,
     }
@@ -145,6 +148,8 @@ def train_and_evaluate_all(mode, csv_path=None, models_dir=None, results_dir=Non
 
         print(f"  Val accuracy:  {val_metrics['accuracy']:.4f}")
         print(f"  Test accuracy: {test_metrics['accuracy']:.4f}")
+        print(f"  Test Top-3:    {test_metrics['top3_accuracy']:.4f}")
+        print(f"  Test Top-5:    {test_metrics['top5_accuracy']:.4f}")
         print(f"  Test F1:       {test_metrics['f1_score']:.4f}")
         print(f"  Avg inference: {test_metrics['avg_inference_time_ms']:.3f} ms/sample")
 
@@ -171,6 +176,8 @@ def train_and_evaluate_all(mode, csv_path=None, models_dir=None, results_dir=Non
             "test_precision": res["test"]["precision"],
             "test_recall": res["test"]["recall"],
             "test_f1": res["test"]["f1_score"],
+            "test_top3_accuracy": res["test"]["top3_accuracy"],
+            "test_top5_accuracy": res["test"]["top5_accuracy"],
             "avg_inference_ms": res["test"]["avg_inference_time_ms"],
         }
         for name, res in all_results.items()

@@ -255,7 +255,7 @@ with tab_report:
     else:
         df = pd.read_csv(results_csv).set_index("algorithm")
         metric_cols = ["test_accuracy", "test_precision", "test_recall",
-                       "test_f1"]
+                       "test_f1", "test_top3_accuracy", "test_top5_accuracy"]
         df_display = df[metric_cols + ["val_accuracy", "training_time_sec",
                                        "avg_inference_ms"]]
         st.dataframe(
