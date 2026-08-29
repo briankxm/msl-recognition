@@ -1,10 +1,3 @@
-"""
-Playground tab — free exploration with live prediction.
-
-Users can upload images or take snapshots to see predictions from all 3
-algorithms, confidence bars, and similar signs. Also supports live camera
-via WebRTC.
-"""
 import os
 import sys
 
@@ -35,12 +28,10 @@ MODE_LABELS = {
     "number": "Number (0\u201310)",
 }
 
-# Shared with the webrtc worker thread (dict assignment is atomic under GIL).
 LIVE_STATE = {"results": None}
 
 
 def _video_frame_callback(frame, models, encoder):
-    """Process each WebRTC video frame and annotate it."""
     img = frame.to_ndarray(format="bgr24")
     rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     annotated = img.copy()
@@ -65,23 +56,14 @@ def _video_frame_callback(frame, models, encoder):
 
 
 def render(selected_mode, input_mode, conf_threshold, models, encoder):
-    """Render the Playground tab.
-
-    Args:
-        selected_mode: "alphabet" or "number"
-        input_mode: "Upload image", "Camera snapshot", or "Live camera"
-        conf_threshold: confidence threshold percentage
-        models: dict from load_models()
-        encoder: fitted LabelEncoder
-    """
     st.subheader(f"Playground \u2014 {MODE_LABELS[selected_mode]}")
     if encoder is not None:
         st.caption("Classes: " + ", ".join(str(c) for c in encoder.classes_))
 
     if not models:
         st.info(
-            "Welcome! This app recognises MSL hand gestures using the "
-            "trained SVM / MLP / Random Forest models.\n\n"
+            "Welcome! This app recognises MSL hand gestures by using "
+            "our best lightweight AI model.\n\n"
             "**To get started:**\n"
             f"1. Add images to `data/raw/{selected_mode}/<class>/` "
             f"(e.g. `A/`, `B/`, ... or `0/`...`10/`)\n"
@@ -91,7 +73,6 @@ def render(selected_mode, input_mode, conf_threshold, models, encoder):
         )
         return
 
-    # --- live camera mode ---
     if input_mode == "Live camera":
         if not WEBRTC_AVAILABLE:
             st.error(
@@ -114,8 +95,8 @@ def render(selected_mode, input_mode, conf_threshold, models, encoder):
             async_processing=True,
         )
         st.caption(
-            "Predictions are drawn live on the video feed "
-            "(SVM | MLP | RandomForest). The detailed panel below "
+            "Predictions are drawn live on the video feed. "
+            "The detailed panel below "
             "shows the latest analysed frame."
         )
         if LIVE_STATE["results"]:

@@ -1,11 +1,3 @@
-"""
-Developer Dashboard tab — 3-algorithm comparison with metrics, charts,
-and confusion matrices.
-
-Reuses the same input flow and threshold slider as the user tabs, but
-runs all three algorithms and displays their predictions side by side
-along with evaluation metrics and diagnostic visualizations.
-"""
 import os
 import sys
 
@@ -24,34 +16,25 @@ from app.inference import (
 from app.ui_helpers import get_input_image, render_prediction_panel
 
 MODE_LABELS = {
-    "alphabet": "Alphabet (A\u2013Z)",
-    "number": "Number (0\u201310)",
+    "alphabet": "Alphabet (A to Z)",
+    "number": "Number (0 to 10)",
 }
 
 
 def render(selected_mode, input_mode, conf_threshold, models, encoder):
-    """Render the Developer Dashboard tab.
-
-    Args:
-        selected_mode: "alphabet" or "number"
-        input_mode: "Upload image", "Camera snapshot", or "Live camera"
-        conf_threshold: confidence threshold percentage
-        models: dict from load_models()
-        encoder: fitted LabelEncoder
-    """
     st.subheader(f"Developer Dashboard \u2014 {MODE_LABELS[selected_mode]}")
 
     if not models:
         st.info("Train models first (see sidebar).")
         return
 
-    # --- live prediction panel ---
     st.markdown("### Live Prediction")
 
     if input_mode == "Live camera":
         st.info(
-            "Live camera prediction is handled in the Playground tab. "
-            "Use upload or snapshot here for detailed analysis."
+            "You can toggle Live Camera Input Method in Playground Tab. "
+            "If you want detailed analysis, please upload static image or use the camera to capture static images."
+            "Allowed File Format: JPG, PNG."
         )
     else:
         image_bgr = get_input_image(input_mode, key="developer")

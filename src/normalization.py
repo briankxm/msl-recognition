@@ -1,34 +1,8 @@
-"""
-Landmark normalisation.
-
-MediaPipe returns 21 hand landmarks, each with (x, y, z) in image-relative
-coordinates. Raw coordinates are NOT directly comparable across hand sizes,
-distances from the camera, or positions in frame - so every feature vector
-is normalised before it is fed to the classifiers (and before inference,
-using this exact same function, so train and inference stay consistent).
-
-Method:
-  1. Translate - shift every landmark so the wrist (landmark 0) sits at the
-                 origin. Removes dependence on WHERE the hand is in frame.
-  2. Scale     - divide every coordinate by the largest distance from the
-                 wrist to any other landmark. Removes dependence on hand
-                 size / distance from camera.
-"""
 import numpy as np
 
 
 def normalise_landmarks(landmarks, handedness=None):
-    """
-    Args:
-        landmarks: iterable of 21 (x, y, z) tuples from MediaPipe.
-        handedness: "Left"/"Right" (or None). A left hand is mirrored
-            horizontally so all training data is canonical right-hand.
-
-    Returns:
-        np.ndarray of shape (63,) - flattened, translation- and
-        scale-invariant feature vector, ready for the classifiers.
-    """
-    pts = np.array(landmarks, dtype=np.float32)  # shape (21, 3)
+    pts = np.array(landmarks, dtype=np.float32)
 
     # Mirror left hands to right hands for consistent training data
     if handedness == "Left":
@@ -44,4 +18,4 @@ def normalise_landmarks(landmarks, handedness=None):
     if max_dist > 1e-6:  # avoid divide-by-zero on degenerate detections
         pts /= max_dist
 
-    return pts.flatten()  # (63,)
+    return pts.flatten()

@@ -1,24 +1,3 @@
-"""
-Implements the second part of the training algorithm:
-
-  SPLIT dataset into Training / Validation / Testing sets
-  FOR each algorithm in [SVM, MLP, RandomForest]:
-      TRAIN using training set
-      VALIDATE
-      TEST using test set
-      CALCULATE accuracy, precision, recall, F1, inference time
-      SAVE trained model
-      SAVE evaluation results
-
-The saved results/<mode>/evaluation_results.(json|csv) files are exactly what
-the Streamlit app reads to render the 3-algorithm comparison report (step 9),
-per selected mode.
-
-Run:
-    python -m src.train_models --mode alphabet
-    python -m src.train_models --mode number
-    python -m src.train_models --mode all
-"""
 import argparse
 import os
 import json
@@ -48,8 +27,6 @@ def load_dataset(csv_path=config.LANDMARKS_CSV):
 
 
 def split_dataset(X, y):
-    """70 / 15 / 15 train / val / test, stratified so every class is
-    represented proportionally in each split."""
     X_train, X_temp, y_train, y_temp = train_test_split(
         X, y,
         train_size=config.TRAIN_SIZE,
@@ -67,9 +44,6 @@ def split_dataset(X, y):
 
 
 def get_algorithms():
-    """The three classifiers being compared, with reasonable defaults.
-    Tune these (e.g. via GridSearchCV on the validation set) if accuracy
-    needs improving."""
     return {
         "SVM": SVC(kernel="rbf", C=10, gamma="scale", probability=True),
         "MLP": MLPClassifier(
@@ -89,8 +63,6 @@ def get_algorithms():
 
 
 def evaluate(model, X, y):
-    """Predict + accuracy / precision / recall / F1 (macro-averaged, since
-    this is multi-class: 26 letters or 10 digits) + top-k accuracy + inference time."""
     start = time.perf_counter()
     y_pred = model.predict(X)
     elapsed = time.perf_counter() - start
@@ -110,8 +82,6 @@ def evaluate(model, X, y):
 
 
 def train_and_evaluate_all(mode, csv_path=None, models_dir=None, results_dir=None):
-    """Train + evaluate all algorithms for one mode. Paths default to the
-    mode's configured locations (overridable for tests)."""
     paths = config.mode_paths(mode)
     csv_path = csv_path or paths["csv"]
     models_dir = models_dir or paths["models_dir"]
@@ -153,16 +123,12 @@ def train_and_evaluate_all(mode, csv_path=None, models_dir=None, results_dir=Non
         print(f"  Test F1:       {test_metrics['f1_score']:.4f}")
         print(f"  Avg inference: {test_metrics['avg_inference_time_ms']:.3f} ms/sample")
 
-        # ---- SAVE trained model ----
         model_path = os.path.join(models_dir, f"{name.lower()}_model.pkl")
         joblib.dump(model, model_path)
         print(f"  Saved model -> {model_path}\n")
 
-    # Save label encoder too - the Streamlit app needs it to turn predicted
-    # class indices back into letters/numbers at inference time.
     joblib.dump(encoder, os.path.join(models_dir, "label_encoder.pkl"))
 
-    # ---- SAVE evaluation results (feeds step 9: the comparison report) ----
     results_json = os.path.join(results_dir, "evaluation_results.json")
     with open(results_json, "w") as f:
         json.dump(all_results, f, indent=2)

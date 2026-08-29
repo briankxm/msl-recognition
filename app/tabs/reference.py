@@ -1,9 +1,3 @@
-"""
-Reference Library tab — shows what each sign is supposed to look like.
-
-No model involved. Displays a grid of reference images from the raw dataset,
-with an expandable gallery for each class showing multiple samples.
-"""
 import os
 import sys
 
@@ -23,12 +17,6 @@ MODE_LABELS = {
 
 
 def render(selected_mode, encoder):
-    """Render the Reference Library tab.
-
-    Args:
-        selected_mode: "alphabet" or "number"
-        encoder: fitted LabelEncoder (to get class labels)
-    """
     st.subheader(f"Reference Library \u2014 {MODE_LABELS[selected_mode]}")
 
     if encoder is None:
@@ -57,7 +45,6 @@ def render(selected_mode, encoder):
 
     st.divider()
 
-    # --- expandable detail: multiple samples per class ---
     st.subheader("Browse all samples")
     selected_class = st.selectbox("Select a class to view", classes, key="ref_class")
     if selected_class:

@@ -25,7 +25,6 @@ from src import config
 from src import hand_detector
 from src.normalization import normalise_landmarks
 
-# model file name -> display name (matches src/train_models.py outputs)
 MODEL_FILES = {
     "svm_model.pkl": "SVM",
     "mlp_model.pkl": "MLP",
@@ -34,8 +33,6 @@ MODEL_FILES = {
 
 TOP_K = 5
 
-# Canonical 21-point hand skeleton (same graph the old MediaPipe
-# drawing_utils used, re-declared here because mp.solutions is gone).
 HAND_CONNECTIONS = [
     (0, 1), (1, 2), (2, 3), (3, 4),                   # thumb
     (0, 5), (5, 6), (6, 7), (7, 8),                   # index finger
@@ -47,13 +44,6 @@ HAND_CONNECTIONS = [
 
 @st.cache_resource(show_spinner="Loading models...")
 def load_models(mode):
-    """Load the classifiers + label encoder trained for one mode
-    ("alphabet" or "number"), stored under models/<mode>/.
-
-    Returns (models: {display_name: estimator}, label_encoder or None).
-    Missing files are simply skipped so the app still runs mid-pipeline.
-    Cached per mode, so switching modes in the sidebar just works.
-    """
     models_dir = config.mode_paths(mode)["models_dir"]
 
     models = {}
@@ -71,7 +61,6 @@ def load_models(mode):
 
 @st.cache_resource(show_spinner="Starting MediaPipe HandLandmarker...")
 def get_static_hands():
-    """Detector for still images (upload/snapshot) - mirrors training config."""
     return hand_detector.create(hand_detector.RUNNING_MODE_IMAGE)
 
 
@@ -81,9 +70,6 @@ _live_last_ts = 0
 
 
 def get_live_hands():
-    """VIDEO-mode detector for the webrtc worker thread. Created lazily with
-    a plain lock instead of st.cache_resource because it runs outside the
-    script thread."""
     global _live_hands
     with _live_lock:
         if _live_hands is None:
@@ -92,10 +78,6 @@ def get_live_hands():
 
 
 def extract_features(image_rgb):
-    """DETECT hand + EXTRACT landmarks for one still numpy RGB image.
-
-    Returns (features_63, landmarks) or (None, None) if no hand found.
-    """
     landmarks, handedness = hand_detector.detect(get_static_hands(), image_rgb)
     if landmarks is None:
         return None, None
@@ -104,9 +86,6 @@ def extract_features(image_rgb):
 
 
 def extract_features_video(image_rgb):
-    """Same as extract_features but for sequential live frames - uses the
-    VIDEO-mode detector and strictly increasing millisecond timestamps as
-    required by MediaPipe tracking."""
     global _live_last_ts
 
     ts = time.perf_counter() * 1000
@@ -122,13 +101,6 @@ def extract_features_video(image_rgb):
 
 
 def predict_all(models, encoder, features):
-    """Run EVERY algorithm on one normalised feature vector.
-
-    Returns:
-        {name: {"label": str, "confidence": float|None,
-                "top": [(class_label, prob), ...]}}
-        "top" holds the TOP_K most probable classes -> the "similar signs".
-    """
     X = np.asarray(features, dtype=np.float32).reshape(1, -1)
     results = {}
 
@@ -156,10 +128,6 @@ def predict_all(models, encoder, features):
 
 
 def draw_hand_overlay(image_bgr, normalized_landmarks):
-    """Draw the 21-point skeleton onto a BGR image (in place) and return it.
-
-    normalized_landmarks: iterable of 21 objects with .x/.y/.z in [0..1].
-    """
     height, width = image_bgr.shape[:2]
     pts = [(int(lm.x * width), int(lm.y * height)) for lm in normalized_landmarks]
 

@@ -1,9 +1,3 @@
-"""
-Shared UI helpers for the MSL Recognition Streamlit app.
-
-Provides reusable rendering functions, input handling, and reference image
-loading used across all tabs.
-"""
 import glob
 import io
 import os
@@ -28,17 +22,11 @@ from src import config
 
 
 def pil_to_bgr(pil_image):
-    """Convert a PIL Image to OpenCV BGR format."""
     rgb = np.array(pil_image.convert("RGB"))
     return cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
 
 
 def get_input_image(input_mode, key="upload"):
-    """Handle upload/snapshot input and return (image_bgr, hand_landmarks) or
-    (None, None) if no image yet or no hand detected.
-
-    Does NOT handle live camera — that requires WebRTC and is wired separately.
-    """
     image_bgr = None
 
     if input_mode == "Upload image":
@@ -58,8 +46,6 @@ def get_input_image(input_mode, key="upload"):
 
 
 def get_reference_images(mode, class_label, max_samples=8):
-    """Return up to `max_samples` image paths for a given class from the raw
-    dataset directory."""
     class_dir = os.path.join(config.mode_paths(mode)["raw_dir"], class_label)
     if not os.path.isdir(class_dir):
         return []
@@ -72,19 +58,9 @@ def get_reference_images(mode, class_label, max_samples=8):
 
 
 def render_prediction_panel(results, conf_threshold):
-    """Three-column prediction display with agreement badge, confidence bars,
-    and top-5 similar signs. Applies the shared confidence threshold — if the
-    best confidence is below threshold, shows 'not confident enough' instead
-    of forcing a labeled guess.
-
-    Args:
-        results: dict from predict_all() — {name: {label, confidence, top}}
-        conf_threshold: int, percentage threshold (e.g. 50)
-    """
     if not results:
         return
 
-    # Check if any model is below the confidence threshold
     best_conf = max(
         (r["confidence"] for r in results.values() if r["confidence"] is not None),
         default=None,
@@ -96,7 +72,6 @@ def render_prediction_panel(results, conf_threshold):
             f"below the {conf_threshold}% threshold. Try holding the sign more clearly."
         )
 
-    # Agreement badge
     labels = [r["label"] for r in results.values()]
     if len(set(labels)) == 1:
         st.success(f"All {len(labels)} algorithms agree: **{labels[0]}**")
@@ -106,7 +81,6 @@ def render_prediction_panel(results, conf_threshold):
             + ", ".join(f"**{n}** → {r['label']}" for n, r in results.items())
         )
 
-    # Per-algorithm columns
     cols = st.columns(len(results))
     for col, (name, res) in zip(cols, results.items()):
         with col:
@@ -123,20 +97,6 @@ def render_prediction_panel(results, conf_threshold):
 
 
 def render_hand_and_predictions(image_bgr, features, hand, models, encoder, conf_threshold):
-    """Render the hand skeleton overlay and prediction panel side by side.
-    Used by both Playground and Developer tabs for static images.
-
-    Args:
-        image_bgr: the input image in BGR format
-        features: normalised 63-element landmark vector (from extract_features)
-        hand: raw MediaPipe landmarks (for skeleton overlay)
-        models: dict from load_models()
-        encoder: label encoder
-        conf_threshold: confidence threshold percentage
-
-    Returns:
-        dict of prediction results, or None if no hand/features.
-    """
     if image_bgr is None or features is None:
         return None
 

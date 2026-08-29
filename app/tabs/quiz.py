@@ -1,10 +1,3 @@
-"""
-Quiz tab — perform a specific sign and get proximity-based feedback.
-
-Instead of flat correct/incorrect, reports how close the user got using the
-model's confidence in the target class. Shows what the gesture actually
-resembled if it wasn't quite right.
-"""
 import random
 import os
 import sys
@@ -24,10 +17,9 @@ MODE_LABELS = {
 }
 
 
-def _proximity_label(score_pct):
-    """Return a human-readable label for the proximity score."""
+def _score_label(score_pct):
     if score_pct >= 80:
-        return "Excellent"
+        return "Excellent!"
     elif score_pct >= 60:
         return "Good"
     elif score_pct >= 40:
@@ -37,15 +29,6 @@ def _proximity_label(score_pct):
 
 
 def render(selected_mode, input_mode, conf_threshold, models, encoder):
-    """Render the Quiz tab.
-
-    Args:
-        selected_mode: "alphabet" or "number"
-        input_mode: "Upload image" or "Camera snapshot" (live not supported for quiz)
-        conf_threshold: confidence threshold percentage
-        models: dict from load_models()
-        encoder: fitted LabelEncoder
-    """
     st.subheader(f"Quiz \u2014 {MODE_LABELS[selected_mode]}")
 
     if not models or encoder is None:
@@ -54,7 +37,6 @@ def render(selected_mode, input_mode, conf_threshold, models, encoder):
 
     classes = [str(c) for c in encoder.classes_]
 
-    # --- target selection ---
     def _on_quiz_class_change():
         st.session_state["quiz_target"] = st.session_state["quiz_select"]
 
@@ -79,7 +61,6 @@ def render(selected_mode, input_mode, conf_threshold, models, encoder):
     st.success(f"**Perform the sign for: {target}**")
     st.caption("Take a photo or upload an image of your attempt.")
 
-    # --- capture attempt ---
     if input_mode == "Live camera":
         st.info("Quiz mode works with **Upload image** or **Camera snapshot**. "
                 "Switch the input source in the sidebar.")
@@ -100,7 +81,6 @@ def render(selected_mode, input_mode, conf_threshold, models, encoder):
         )
         return
 
-    # Show detected hand
     shown = draw_hand_overlay(image_bgr.copy(), hand)
     st.image(
         cv2.cvtColor(shown, cv2.COLOR_BGR2RGB),
@@ -108,13 +88,11 @@ def render(selected_mode, input_mode, conf_threshold, models, encoder):
         width="stretch",
     )
 
-    # --- run predictions ---
     results = predict_all(models, encoder, features)
 
     st.divider()
     st.subheader("Results")
 
-    # Find the probability of the target class for each model
     X = np.asarray(features, dtype=np.float32).reshape(1, -1)
 
     algo_results = {}
@@ -122,7 +100,6 @@ def render(selected_mode, input_mode, conf_threshold, models, encoder):
         target_conf = None
         if hasattr(model, "predict_proba"):
             proba = model.predict_proba(X)[0]
-            # Find the index of the target class
             class_idx = None
             for i, cls in enumerate(model.classes_):
                 cls_label = str(encoder.inverse_transform([i])[0]) if encoder is not None else str(cls)
@@ -139,7 +116,6 @@ def render(selected_mode, input_mode, conf_threshold, models, encoder):
             "top": results[name]["top"],
         }
 
-    # --- display per-algorithm proximity scores ---
     cols = st.columns(len(algo_results))
     for col, (name, data) in zip(cols, algo_results.items()):
         with col:
@@ -147,7 +123,7 @@ def render(selected_mode, input_mode, conf_threshold, models, encoder):
 
             if data["target_confidence"] is not None:
                 score_pct = data["target_confidence"] * 100
-                label = _proximity_label(score_pct)
+                label = _score_label(score_pct)
                 st.progress(
                     min(score_pct, 100) / 100,
                     text=f"{score_pct:.1f}% \u2014 {label}",
@@ -156,7 +132,6 @@ def render(selected_mode, input_mode, conf_threshold, models, encoder):
                 if data["predicted"] == target:
                     st.success("Correct!")
                 else:
-                    # What it actually resembled
                     top_label = data["top"][0][0] if data["top"] else "?"
                     top_conf = data["top"][0][1] * 100 if data["top"] else 0
                     st.warning(
@@ -165,11 +140,9 @@ def render(selected_mode, input_mode, conf_threshold, models, encoder):
             else:
                 st.caption("Model does not support probability estimates.")
 
-    # --- attempt history ---
     if "quiz_history" not in st.session_state:
         st.session_state["quiz_history"] = []
 
-    # Save this attempt
     attempt = {
         "target": target,
         "scores": {

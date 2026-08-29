@@ -1,19 +1,3 @@
-"""
-MSL Hand Gesture Recognition - Streamlit interface.
-
-Run from the project root:
-    streamlit run app/app.py
-
-Tabs:
-    Reference Library  - grid of reference images per class, no model needed.
-    Playground         - free exploration with live prediction and confidence.
-    Quiz               - perform a target sign and get proximity-based feedback.
-    Developer Dashboard - 3-algorithm comparison, metrics, and confusion matrices.
-
-Modes are chosen in the sidebar: alphabet (A-Z) and number (0-10) are two
-independent classification tasks, each with its own trained models under
-models/<mode>/.
-"""
 import os
 import sys
 
@@ -35,7 +19,6 @@ MODE_LABELS = {
     "number": "Number (0\u201310)",
 }
 
-# ------------------------------------------------------------------ sidebar ---
 with st.sidebar:
     st.header("Settings")
 
@@ -77,7 +60,6 @@ with st.sidebar:
             f"`python -m src.train_models --mode {selected_mode}`"
         )
 
-# --------------------------------------------------------------------- tabs ---
 tab_ref, tab_play, tab_quiz, tab_dev = st.tabs([
     "Reference Library",
     "Playground",
@@ -85,18 +67,22 @@ tab_ref, tab_play, tab_quiz, tab_dev = st.tabs([
     "Developer Dashboard",
 ])
 
+# Reference Library
 with tab_ref:
     from app.tabs import reference
     reference.render(selected_mode, encoder)
 
+# Playground
 with tab_play:
     from app.tabs import playground
     playground.render(selected_mode, input_mode, conf_threshold, models, encoder)
 
+# Quiz
 with tab_quiz:
     from app.tabs import quiz
     quiz.render(selected_mode, input_mode, conf_threshold, models, encoder)
 
+# Developer Mode
 with tab_dev:
     from app.tabs import developer
     developer.render(selected_mode, input_mode, conf_threshold, models, encoder)
