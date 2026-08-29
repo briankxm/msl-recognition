@@ -26,7 +26,6 @@ def render(selected_mode, encoder):
     classes = [str(c) for c in encoder.classes_]
     st.caption(f"Here are some sample references for {len(classes)} classes. You can follow along each hand gesture, below this section are more samples for you to learn.")
 
-    # --- grid overview: one image per class ---
     cols_per_row = 6
     for row_start in range(0, len(classes), cols_per_row):
         row_classes = classes[row_start : row_start + cols_per_row]

@@ -40,18 +40,16 @@ def render(selected_mode, input_mode, conf_threshold, models, encoder):
     def _on_quiz_class_change():
         st.session_state["quiz_target"] = st.session_state["quiz_select"]
 
-    col_random, col_select = st.columns(2)
-    with col_random:
-        if st.button("Pick random class", width="stretch"):
-            st.session_state["quiz_target"] = random.choice(classes)
-    with col_select:
-        st.selectbox(
-            "Or choose a class to practice",
-            classes,
-            index=0,
-            key="quiz_select",
-            on_change=_on_quiz_class_change,
-        )
+    if st.button("Pick random class", width="stretch"):
+        st.session_state["quiz_target"] = random.choice(classes)
+
+    st.selectbox(
+        "Or choose a class to practice",
+        classes,
+        index=0,
+        key="quiz_select",
+        on_change=_on_quiz_class_change,
+    )
 
     target = st.session_state.get("quiz_target")
     if not target:

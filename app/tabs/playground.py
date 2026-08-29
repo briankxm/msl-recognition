@@ -103,7 +103,6 @@ def render(selected_mode, input_mode, conf_threshold, models, encoder):
             render_prediction_panel(LIVE_STATE["results"], conf_threshold, developer=False)
         return
 
-    # --- static image modes (upload / snapshot) ---
     image_bgr = get_input_image(input_mode, key="playground")
 
     if image_bgr is not None:
