@@ -93,11 +93,7 @@ def render(selected_mode, input_mode, conf_threshold, models, encoder):
 
     X = np.asarray(features, dtype=np.float32).reshape(1, -1)
 
-    best_result = None
-    for name, res in results.items():
-        if res["confidence"] is not None:
-            if best_result is None or res["confidence"] > best_result["confidence"]:
-                best_result = res
+    best_result = results.get("SVM")
 
     if best_result is None:
         st.info("No model could produce a prediction.")

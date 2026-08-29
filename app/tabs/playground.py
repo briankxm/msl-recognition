@@ -46,7 +46,8 @@ def _video_frame_callback(frame, models, encoder):
         draw_hand_overlay(annotated, hand)
         results = predict_all(models, encoder, features)
         LIVE_STATE["results"] = results
-        text = " | ".join(f"{n}: {r['label']}" for n, r in results.items())
+        svm_result = results.get("SVM")
+        text = f"SVM: {svm_result['label']}" if svm_result else "SVM: ?"
         cv2.putText(
             annotated, text, (10, 40),
             cv2.FONT_HERSHEY_SIMPLEX, 1.1, (0, 255, 0), 2,

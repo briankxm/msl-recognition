@@ -67,11 +67,7 @@ def render_prediction_panel(results, conf_threshold, developer=False):
     )
 
     if not developer:
-        best_result = max(
-            (r for r in results.values() if r["confidence"] is not None),
-            key=lambda r: r["confidence"],
-            default=None,
-        )
+        best_result = results.get("SVM")
         if best_result is None:
             st.info("No model could produce a prediction.")
             return
