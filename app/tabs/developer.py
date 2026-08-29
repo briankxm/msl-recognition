@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 
@@ -63,14 +64,13 @@ def render(selected_mode, input_mode, conf_threshold, models, encoder):
 
     st.divider()
 
-    # --- evaluation metrics ---
     st.markdown("### Model Comparison Report")
     from src import config
 
     mode_paths = config.mode_paths(selected_mode)
-    results_csv = os.path.join(mode_paths["results_dir"], "evaluation_results.csv")
+    results_json = os.path.join(mode_paths["results_dir"], "evaluation_results.json")
 
-    if not os.path.exists(results_csv):
+    if not os.path.exists(results_json):
         st.info(
             f"No evaluation results for {MODE_LABELS[selected_mode]} yet.\n\nRun:\n"
             f"```bash\npython -m src.landmark_extraction --mode {selected_mode}\n"
@@ -79,9 +79,25 @@ def render(selected_mode, input_mode, conf_threshold, models, encoder):
         )
         return
 
-    df = pd.read_csv(results_csv).set_index("algorithm")
+    with open(results_json, "r") as f:
+        eval_data = json.load(f)
 
-    # Metrics table
+    rows = []
+    for algo_name, algo_data in eval_data.items():
+        rows.append({
+            "algorithm": algo_name,
+            "training_time_sec": algo_data["training_time_sec"],
+            "val_accuracy": algo_data["validation"]["accuracy"],
+            "test_accuracy": algo_data["test"]["accuracy"],
+            "test_precision": algo_data["test"]["precision"],
+            "test_recall": algo_data["test"]["recall"],
+            "test_f1": algo_data["test"]["f1_score"],
+            "test_top3_accuracy": algo_data["top3_accuracy"],
+            "test_top5_accuracy": algo_data["top5_accuracy"],
+            "avg_inference_ms": algo_data["test"]["avg_inference_time_ms"],
+        })
+    df = pd.DataFrame(rows).set_index("algorithm")
+
     metric_cols = [
         "test_accuracy", "test_precision", "test_recall", "test_f1",
         "test_top3_accuracy", "test_top5_accuracy",
@@ -89,7 +105,6 @@ def render(selected_mode, input_mode, conf_threshold, models, encoder):
     df_display = df[metric_cols + ["val_accuracy", "training_time_sec", "avg_inference_ms"]]
     st.dataframe(df_display.style.format("{:.4f}"), width="stretch")
 
-    # Comparison charts
     c1, c2 = st.columns(2)
     with c1:
         st.caption("Test metrics by algorithm")
@@ -101,34 +116,15 @@ def render(selected_mode, input_mode, conf_threshold, models, encoder):
     st.caption("Average inference time per sample (ms) \u2014 lower is better")
     st.bar_chart(df["avg_inference_ms"])
 
-    # --- confusion matrix ---
     st.divider()
-    st.markdown("### Confusion Matrix (test split)")
+    st.markdown("### Confusion Matrix")
 
-    landmarks_csv = mode_paths["csv"]
-    if not os.path.exists(landmarks_csv):
-        st.caption(
-            f"`{os.path.relpath(landmarks_csv)}` not found \u2014 "
-            f"re-run landmark extraction to enable this chart."
-        )
-        return
+    algo = st.selectbox("Algorithm", list(eval_data.keys()))
 
-    algo = st.selectbox("Algorithm", list(models))
+    algo_data = eval_data[algo]
+    cm = algo_data["confusion_matrix"]
+    class_names = algo_data["classes"]
 
-    @st.cache_data(show_spinner="Preparing test split...")
-    def test_split(csv_path):
-        from src.train_models import load_dataset, split_dataset
-
-        X, y, enc = load_dataset(csv_path)
-        _, _, X_test, _, _, y_test = split_dataset(X, y)
-        return X_test, y_test, list(enc.classes_)
-
-    X_test, y_test, class_names = test_split(landmarks_csv)
-    y_pred = models[algo].predict(X_test)
-
-    from sklearn.metrics import confusion_matrix
-
-    cm = confusion_matrix(y_test, y_pred)
     show_text = len(class_names) <= 20
     fig = px.imshow(
         cm,
@@ -137,7 +133,17 @@ def render(selected_mode, input_mode, conf_threshold, models, encoder):
         text_auto=".0f" if show_text else False,
         color_continuous_scale="Blues",
         labels=dict(x="Predicted", y="True", color="count"),
-        title=f"{algo} \u2014 confusion matrix on the held-out test set",
+        title=f"{algo} \u2014 confusion matrix",
     )
     fig.update_layout(height=620)
     st.plotly_chart(fig, width="stretch")
+
+    error_pairs = algo_data.get("error_pairs", [])
+    n_errors = algo_data.get("n_errors", 0)
+
+    if n_errors > 0:
+        st.caption(f"**{n_errors}** misclassified sample(s) in the test set:")
+        for ep in error_pairs:
+            st.write(f"- True **{ep['true']}** \u2192 Predicted **{ep['pred']}** ({ep['count']}x)")
+    else:
+        st.success("No misclassifications \u2014 perfect accuracy on the test set!")

@@ -74,4 +74,4 @@ with tab_dev:
     developer.render(selected_mode, input_mode, conf_threshold, models, encoder)
 
 st.divider()
-st.caption("Happy Learning ! This system is built by Brian Kam Ding Xian, Imam Mahdi Ali Ang Attuko, and Lee Boon Yew. @2026")
+st.caption("Happy Learning ! This system is built by Brian Kam Ding Xian, Imam Mahdi Ali Ang Attuko, and Lee Boon Yew @2026")
