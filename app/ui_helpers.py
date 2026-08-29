@@ -57,7 +57,7 @@ def get_reference_images(mode, class_label, max_samples=8):
     return files[:max_samples]
 
 
-def render_prediction_panel(results, conf_threshold):
+def render_prediction_panel(results, conf_threshold, developer=False):
     if not results:
         return
 
@@ -65,6 +65,30 @@ def render_prediction_panel(results, conf_threshold):
         (r["confidence"] for r in results.values() if r["confidence"] is not None),
         default=None,
     )
+
+    if not developer:
+        best_result = max(
+            (r for r in results.values() if r["confidence"] is not None),
+            key=lambda r: r["confidence"],
+            default=None,
+        )
+        if best_result is None:
+            st.info("No model could produce a prediction.")
+            return
+
+        if best_conf is not None and best_conf * 100 < conf_threshold:
+            st.info(
+                f"Not confident enough — best confidence is {best_conf * 100:.1f}%, "
+                f"below the {conf_threshold}% threshold. Try holding the sign more clearly."
+            )
+
+        st.markdown(f"### Prediction: **{best_result['label']}**")
+
+        top = [(label, prob) for label, prob in best_result["top"] if label != best_result["label"]]
+        if top:
+            second_label, second_prob = top[0]
+            st.markdown(f"Second most similar: **{second_label}** ({second_prob * 100:.1f}%)")
+        return
 
     if best_conf is not None and best_conf * 100 < conf_threshold:
         st.info(
@@ -96,7 +120,7 @@ def render_prediction_panel(results, conf_threshold):
                     st.bar_chart(pd.Series(top), height=220)
 
 
-def render_hand_and_predictions(image_bgr, features, hand, models, encoder, conf_threshold):
+def render_hand_and_predictions(image_bgr, features, hand, models, encoder, conf_threshold, developer=False):
     if image_bgr is None or features is None:
         return None
 
@@ -110,5 +134,5 @@ def render_hand_and_predictions(image_bgr, features, hand, models, encoder, conf
         )
     with right:
         results = predict_all(models, encoder, features)
-        render_prediction_panel(results, conf_threshold)
+        render_prediction_panel(results, conf_threshold, developer=developer)
     return results

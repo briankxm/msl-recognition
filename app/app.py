@@ -28,15 +28,6 @@ with st.sidebar:
         format_func=MODE_LABELS.get,
     )
 
-    for m in config.MODES:
-        m_models, _ = load_models(m)
-        if m == selected_mode:
-            continue
-        if m_models:
-            st.caption(f"{MODE_LABELS[m]}: trained")
-        else:
-            st.caption(f"{MODE_LABELS[m]}: not trained yet")
-
     input_mode = st.radio(
         "Input source",
         ["Upload image", "Camera snapshot", "Live camera"],
@@ -47,12 +38,7 @@ with st.sidebar:
 
     models, encoder = load_models(selected_mode)
     if models:
-        n_classes = len(encoder.classes_) if encoder is not None else "?"
-        st.success(
-            f"**{MODE_LABELS[selected_mode]} models loaded**\n\n"
-            + "\n".join(f"- {n}" for n in models)
-            + f"\n\n- classes: {n_classes}"
-        )
+        st.success(f"**{MODE_LABELS[selected_mode]}** models loaded")
     else:
         st.error(
             f"No models found for {MODE_LABELS[selected_mode]}.\n\nRun:\n"

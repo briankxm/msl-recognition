@@ -9,7 +9,7 @@ import numpy as np
 import streamlit as st
 
 from app.inference import draw_hand_overlay, extract_features, predict_all
-from app.ui_helpers import get_input_image
+from app.ui_helpers import get_input_image, get_reference_images
 
 MODE_LABELS = {
     "alphabet": "Alphabet (A\u2013Z)",
@@ -95,62 +95,65 @@ def render(selected_mode, input_mode, conf_threshold, models, encoder):
 
     X = np.asarray(features, dtype=np.float32).reshape(1, -1)
 
-    algo_results = {}
-    for name, model in models.items():
+    best_result = None
+    for name, res in results.items():
+        if res["confidence"] is not None:
+            if best_result is None or res["confidence"] > best_result["confidence"]:
+                best_result = res
+
+    if best_result is None:
+        st.info("No model could produce a prediction.")
+    else:
+        predicted = best_result["label"]
+        st.markdown(f"### Prediction: **{predicted}**")
+
         target_conf = None
-        if hasattr(model, "predict_proba"):
-            proba = model.predict_proba(X)[0]
-            class_idx = None
-            for i, cls in enumerate(model.classes_):
-                cls_label = str(encoder.inverse_transform([i])[0]) if encoder is not None else str(cls)
-                if cls_label == target:
-                    class_idx = i
-                    break
-            if class_idx is not None:
-                target_conf = float(proba[class_idx])
+        for name, model in models.items():
+            if hasattr(model, "predict_proba"):
+                proba = model.predict_proba(X)[0]
+                for i, cls in enumerate(model.classes_):
+                    cls_label = str(encoder.inverse_transform([i])[0]) if encoder else str(cls)
+                    if cls_label == target:
+                        prob = float(proba[i])
+                        if target_conf is None or prob > target_conf:
+                            target_conf = prob
+                        break
 
-        # change name to best model
-        algo_results[name] = {
-            "predicted": results[name]["label"],
-            "target_confidence": target_conf,
-            "top": results[name]["top"],
-        }
+        if target_conf is not None:
+            score_pct = target_conf * 100
+            label = _score_label(score_pct)
+            st.progress(
+                min(score_pct, 100) / 100,
+                text=f"{score_pct:.1f}% \u2014 {label}",
+            )
 
-    cols = st.columns(len(algo_results))
-    for col, (name, data) in zip(cols, algo_results.items()):
-        with col:
-            st.metric(name, f"Predicted: {data['predicted']}")
-
-            if data["target_confidence"] is not None:
-                score_pct = data["target_confidence"] * 100
-                label = _score_label(score_pct)
-                st.progress(
-                    min(score_pct, 100) / 100,
-                    text=f"{score_pct:.1f}% \u2014 {label}",
-                )
-
-                if data["predicted"] == target:
-                    st.success("Correct!")
-                else:
-                    top_label = data["top"][0][0] if data["top"] else "?"
-                    top_conf = data["top"][0][1] * 100 if data["top"] else 0
-                    st.warning(
-                        f"Your gesture most resembled **{top_label}** ({top_conf:.1f}%)"
-                    )
+            if predicted == target:
+                st.success("Correct!")
             else:
-                st.caption("Model does not support probability estimates.")
+                top = [(l, p) for l, p in best_result["top"] if l != predicted]
+                if top:
+                    second_label, second_prob = top[0]
+                    st.warning(
+                        f"Your gesture most resembled **{second_label}** ({second_prob * 100:.1f}%)"
+                    )
+        else:
+            if predicted == target:
+                st.success("Correct!")
+            else:
+                st.warning(f"Your gesture most resembled **{predicted}**")
+                
+    ref_images = get_reference_images(selected_mode, target, max_samples=1)
+    if ref_images:
+        st.image(ref_images[0], caption=f"Reference: {target}", width=250)
+
 
     if "quiz_history" not in st.session_state:
         st.session_state["quiz_history"] = []
 
     attempt = {
         "target": target,
-        "scores": {
-            name: data["target_confidence"]
-            for name, data in algo_results.items()
-            if data["target_confidence"] is not None
-        },
-        "predicted": {name: data["predicted"] for name, data in algo_results.items()},
+        "predicted": predicted if best_result else None,
+        "confidence": target_conf if best_result else None,
     }
     st.session_state["quiz_history"].append(attempt)
 
@@ -159,13 +162,9 @@ def render(selected_mode, input_mode, conf_threshold, models, encoder):
         st.subheader("Attempt History")
         history = st.session_state["quiz_history"]
         for i, a in enumerate(reversed(history[-10:]), 1):
-            avg_score = (
-                np.mean(list(a["scores"].values())) * 100
-                if a["scores"]
-                else 0
-            )
+            conf_pct = a["confidence"] * 100 if a["confidence"] else 0
+            status = "Correct" if a["predicted"] == a["target"] else f"Predicted {a['predicted']}"
             st.caption(
                 f"#{len(history) - i + 1}: Target **{a['target']}** \u2014 "
-                f"avg proximity {avg_score:.1f}% \u2014 "
-                f"predicted {', '.join(a['predicted'].values())}"
+                f"{status} ({conf_pct:.1f}%)"
             )

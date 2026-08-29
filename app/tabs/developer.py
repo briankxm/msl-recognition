@@ -59,7 +59,7 @@ def render(selected_mode, input_mode, conf_threshold, models, encoder):
                     )
                 with right:
                     results = predict_all(models, encoder, features)
-                    render_prediction_panel(results, conf_threshold)
+                    render_prediction_panel(results, conf_threshold, developer=True)
 
     st.divider()
 

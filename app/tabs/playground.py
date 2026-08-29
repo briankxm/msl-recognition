@@ -100,7 +100,7 @@ def render(selected_mode, input_mode, conf_threshold, models, encoder):
             "shows the latest analysed frame."
         )
         if LIVE_STATE["results"]:
-            render_prediction_panel(LIVE_STATE["results"], conf_threshold)
+            render_prediction_panel(LIVE_STATE["results"], conf_threshold, developer=False)
         return
 
     # --- static image modes (upload / snapshot) ---
@@ -126,4 +126,4 @@ def render(selected_mode, input_mode, conf_threshold, models, encoder):
                 )
             with right:
                 results = predict_all(models, encoder, features)
-                render_prediction_panel(results, conf_threshold)
+                render_prediction_panel(results, conf_threshold, developer=False)
