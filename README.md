@@ -26,7 +26,15 @@ msl_recognition_system/
 │   ├── hand_detector.py         # MediaPipe Tasks HandLandmarker factory
 │   ├── landmark_extraction.py   # dataset -> feature CSV
 │   └── train_models.py          # split, train, evaluate, save
-├── app/                         # Streamlit demo app (app.py + inference.py)
+├── app/
+│   ├── app.py              # Streamlit entry point (sidebar + tab router)
+│   ├── ui_helpers.py       # Shared rendering & input helpers
+│   ├── inference.py        # Model loading, prediction, hand detection
+│   └── tabs/
+│       ├── reference.py    # Reference Library — browse sign images
+│       ├── playground.py   # Playground — free prediction with confidence
+│       ├── quiz.py         # Quiz — perform a sign, get proximity feedback
+│       └── developer.py    # Developer Dashboard — 3-algorithm comparison
 └── requirements.txt
 ```
 
@@ -86,15 +94,36 @@ comparison report to `results/<mode>/evaluation_results.json` and `.csv`.
 streamlit run app/app.py
 ```
 
-- **Prediction tab** — choose the recognition mode (Alphabet ⇄ Number) in
-  the sidebar, then input via upload / camera snapshot / live camera.
-  All 3 algorithms (SVM, MLP, RandomForest) predict side by side with
-  confidence bars and a top-5 "similar signs" chart each, plus an agreement
-  badge. The hand skeleton overlay shows what MediaPipe detected.
-- **Model comparison tab** — the step-9 report for the selected mode:
-  metrics table, accuracy / precision / recall / F1 charts, inference-time
-  comparison, and per-algorithm confusion matrices on the held-out test
-  split.
+The sidebar controls recognition mode (Alphabet / Number), input source
+(upload / snapshot / live camera), and a shared confidence threshold slider.
+
+### Reference Library
+
+Grid of reference images showing what each sign looks like (read from
+`data/raw/`). Click a class to expand and see multiple samples. No model
+involved — purely visual.
+
+### Playground
+
+Free exploration. Upload a photo, take a snapshot, or use the live camera.
+All 3 algorithms (SVM, MLP, RandomForest) predict side by side with
+confidence bars, top-5 "similar signs" charts, and an agreement badge.
+Below the threshold the system says "not confident enough" instead of
+forcing a labeled guess.
+
+### Quiz
+
+Pick a target class or let the system randomise one, then perform the
+gesture. Instead of a flat correct/incorrect mark, each algorithm reports
+how confident it is in the target class (proximity score). If the gesture
+wasn't quite right, it shows what it actually resembled.
+
+### Developer Dashboard
+
+Same input flow and threshold slider, but adds a full comparison report:
+evaluation metrics table (accuracy, precision, recall, F1, top-3/5,
+inference speed), bar charts across algorithms, and per-algorithm confusion
+matrices on the held-out test split.
 
 Each mode's labels come from its own `models/<mode>/label_encoder.pkl`
 (alphabet folder names A-Z, number folder names 0-10).
