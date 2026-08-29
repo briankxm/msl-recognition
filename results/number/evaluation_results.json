@@ -1,0 +1,71 @@
+{
+  "SVM": {
+    "training_time_sec": 0.3835315299998001,
+    "validation": {
+      "accuracy": 0.9959731543624161,
+      "precision": 0.9963885879378837,
+      "recall": 0.995898678226869,
+      "f1_score": 0.9960986204343338,
+      "top3_accuracy": 1.0,
+      "top5_accuracy": 1.0,
+      "total_inference_time_sec": 0.027006156999959785,
+      "avg_inference_time_ms": 0.03624987516773126
+    },
+    "test": {
+      "accuracy": 0.9973190348525469,
+      "precision": 0.9975169757778453,
+      "recall": 0.9973455785476246,
+      "f1_score": 0.9974129490493983,
+      "top3_accuracy": 1.0,
+      "top5_accuracy": 1.0,
+      "total_inference_time_sec": 0.02669044499998563,
+      "avg_inference_time_ms": 0.035778076407487445
+    }
+  },
+  "MLP": {
+    "training_time_sec": 2.071356786000024,
+    "validation": {
+      "accuracy": 0.9959731543624161,
+      "precision": 0.9960741013372592,
+      "recall": 0.9960081017835722,
+      "f1_score": 0.9959944318314036,
+      "top3_accuracy": 1.0,
+      "top5_accuracy": 1.0,
+      "total_inference_time_sec": 0.0025654580001628347,
+      "avg_inference_time_ms": 0.003443567785453469
+    },
+    "test": {
+      "accuracy": 0.9932975871313673,
+      "precision": 0.9933769033265775,
+      "recall": 0.9932237494859785,
+      "f1_score": 0.9932722257577797,
+      "top3_accuracy": 0.9986595174262735,
+      "top5_accuracy": 1.0,
+      "total_inference_time_sec": 0.0024333229998774186,
+      "avg_inference_time_ms": 0.003261827077583671
+    }
+  },
+  "RandomForest": {
+    "training_time_sec": 4.378279957999894,
+    "validation": {
+      "accuracy": 0.9986577181208054,
+      "precision": 0.998719590268886,
+      "recall": 0.998533724340176,
+      "f1_score": 0.9986161563743298,
+      "top3_accuracy": 1.0,
+      "top5_accuracy": 1.0,
+      "total_inference_time_sec": 0.039403879000019515,
+      "avg_inference_time_ms": 0.05289111275170405
+    },
+    "test": {
+      "accuracy": 0.9973190348525469,
+      "precision": 0.997364953886693,
+      "recall": 0.9972162012835226,
+      "f1_score": 0.997270191680019,
+      "top3_accuracy": 0.9986595174262735,
+      "top5_accuracy": 1.0,
+      "total_inference_time_sec": 0.036802272999921115,
+      "avg_inference_time_ms": 0.04933280562992107
+    }
+  }
+}
