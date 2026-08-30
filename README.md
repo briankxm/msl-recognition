@@ -7,7 +7,7 @@
 ## Folder structure
 
 ```
-msl_recognition_system/
+msl-recognition/
 ├── data/
 │   ├── raw/                     # <-- put your datasets here (see below)
 │   │   ├── alphabet/            # A/ ... Z/
@@ -36,7 +36,8 @@ msl_recognition_system/
 │       ├── playground.py   # Playground — free prediction with confidence
 │       ├── quiz.py         # Quiz — perform a sign, get proximity feedback
 │       └── developer.py    # Developer Dashboard — 3-algorithm comparison
-└── requirements.txt
+├── requirements.txt
+└── packages.txt
 ```
 
 ## 1. Add your dataset
