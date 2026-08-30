@@ -1,7 +1,8 @@
-# MSL Hand Gesture Recognition — Training Pipeline
+# Streamlit Prototype Link
 
-Implements your pseudocode: MediaPipe landmark extraction → normalisation →
-SVM / MLP / Random Forest training → evaluation → comparison report.
+## You can access our prototype by using this link [MSL Recognition](https://msl-recognition-alphabet-and-numbers.streamlit.app/).
+
+# MSL Hand Gesture Recognition — Training Pipeline
 
 ## Folder structure
 
@@ -94,6 +95,8 @@ comparison report to `results/<mode>/evaluation_results.json` and `.csv`.
 streamlit run app/app.py
 ```
 
+## Prototype
+
 The sidebar controls recognition mode (Alphabet / Number), input source
 (upload / snapshot / live camera), and a shared confidence threshold slider.
 
@@ -127,10 +130,3 @@ matrices on the held-out test split.
 
 Each mode's labels come from its own `models/<mode>/label_encoder.pkl`
 (alphabet folder names A-Z, number folder names 0-10).
-
-## 6. Deploy (GitHub + Streamlit Community Cloud) - Optional
-
-1. Push this repo to GitHub.
-2. Go to https://share.streamlit.io → New app → pick your repo.
-3. Set main file path to `app/app.py` → Deploy (requirements.txt is picked up
-   automatically; the live-camera tab needs HTTPS, which the cloud provides).
